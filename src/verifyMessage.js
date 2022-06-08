@@ -15,31 +15,30 @@ export default function SignMessage() {
   const [pubkey, setPubkey] = useState()
   const [textoFirmado, setTextoFirmado] = useState()
 
-  const  firmar= async(message) => {
 
-    if (!window.ethereum)
-      throw new Error("No crypto wallet found. Please install it.");
-    //else alert("Wallet OK");
+  const validar = async ( message, signature, address ) => {
+    try {
+      const signerAddr = await ethers.utils.verifyMessage(message, signature);
+      if (signerAddr !== address) {
+        alert("Firma invalida!" )
+        return
+      }
+      alert("Validacion OK!")
 
-    await window.ethereum.send("eth_requestAccounts");
+    } catch (err) {
+      console.log(err);
+      alert("error chequeando!")
+    }
+  };
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    console.log("Signer", signer)
-    const signature = await signer.signMessage(message);
-    const address = await signer.getAddress();
-    console.log("signature", signature)
-    console.log("address", address)
-    setPubkey(address)
-    setTextoFirmado(signature)
-  }
 
   const handleSubmit = async(event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const texto1= data.get('texto1')
-    setTexto1(texto1)
-    await firmar(texto1)
+    const textoFirmado= data.get('textoFirmado')
+    const pubkey= data.get('pubkey')
+    await validar(texto1, textoFirmado, pubkey)
 
 
   };
@@ -47,15 +46,31 @@ export default function SignMessage() {
 
   <div>
   <Typography component="h1" variant="h5">
-    Texto a firmar
+    Verificar
   </Typography>
 
   <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
     <TextareaAutosize
       aria-label="empty textarea"
-      placeholder="Texto"
+      placeholder="Texto original"
       minRows={3}
       name="texto1"
+      style={{ width: 500 }}
+    />
+
+
+<TextareaAutosize
+      aria-label="empty textarea"
+      placeholder="Texto firmado"
+      minRows={3}
+      name="textoFirmado"
+      style={{ width: 500 }}
+    />
+
+<TextareaAutosize
+      aria-label="empty textarea"
+      placeholder="Address (pubkey)"
+      name="pubkey"
       style={{ width: 500 }}
     />
 
@@ -66,21 +81,10 @@ export default function SignMessage() {
       variant="contained"
       sx={{ mt: 3, mb: 2 }}
       >
-    Firmar con Metamask
+        Validar
     </Button>
   </Box>
 
-  <Typography component="h5" variant="h5">
-    Texto usado en la firma: {texto1}
-  </Typography>
-
-  <Typography component="h5" variant="h5">
-    Address firmante: {pubkey}
-  </Typography>
-
-  <Typography component="h7" variant="h7">
-    Texto firmado: {textoFirmado}
-  </Typography>
     </div>
  
 
