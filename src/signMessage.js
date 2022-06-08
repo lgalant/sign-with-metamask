@@ -25,11 +25,8 @@ export default function SignMessage() {
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    console.log("Signer", signer)
     const signature = await signer.signMessage(message);
     const address = await signer.getAddress();
-    console.log("signature", signature)
-    console.log("address", address)
     setPubkey(address)
     setTextoFirmado(signature)
   }
